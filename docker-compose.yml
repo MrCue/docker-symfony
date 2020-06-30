@@ -1,0 +1,104 @@
+version: '2'
+
+services:
+    db:
+        restart: unless-stopped
+        image: mysql
+        volumes:
+            - "./.data/db:/var/lib/mysql"
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            MYSQL_DATABASE: ${MYSQL_DATABASE}
+            MYSQL_USER: ${MYSQL_USER}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+        #ports:
+        #    - 3306:3306
+
+    php:
+        restart: unless-stopped
+        build:
+            context: infrastructure/php7-fpm
+            args:
+                TIMEZONE: ${TIMEZONE}
+        volumes:
+            - ${SYMFONY_APP_PATH}:/var/www/symfony
+            - ./.data/symfony/uploads:/var/www/symfony/uploads/
+            - ./logs/symfony:/var/www/symfony/app/logs
+            - ./logs/php-fpm:/var/logs/php
+
+    php_cli_supervisord:
+        restart: unless-stopped
+        build:
+            context: infrastructure/php7-cli-supervisord
+            args:
+                TIMEZONE: ${TIMEZONE}
+        volumes_from:
+            - php
+        volumes:
+            - ./logs/supervisor:/var/log/supervisor/
+            - ./infrastructure/php7-cli-supervisord/etc/supervisor/:/etc/supervisor/
+            - ./logs/php-cli-supervisord:/var/log/php
+        command: /usr/bin/supervisord
+
+    nginx:
+        restart: unless-stopped
+        build: infrastructure/nginx
+        ports:
+            - 80:80
+            - 443:443
+        volumes_from:
+            - php
+        volumes:
+            - ./logs/nginx/:/var/log/nginx
+            - ./certbot/:/etc/letsencrypt
+
+    elk:
+        restart: unless-stopped
+        image: willdurand/elk
+        ports:
+            - 81:80
+        volumes:
+            - ./infrastructure/elk/logstash:/etc/logstash
+            - ./infrastructure/elk/logstash/patterns:/opt/logstash/patterns
+        volumes_from:
+            - php
+            - nginx
+    rabbit_mq:
+        restart: unless-stopped
+        image: rabbitmq:3-management-alpine
+        #ports:
+        #    - 15671:15671
+        #    - 15672:15672
+        #    - 5672:5672
+        volumes:
+            - ./infrastructure/rabbitmq/etc/:/etc/rabbitmq/
+            #- ./.data/rabbitmq/:/var/lib/rabbitmq/
+            - ./logs/rabbitmq/:/var/log/rabbitmq/log
+
+    redis:
+        restart: unless-stopped
+        image: redis:alpine
+        #ports:
+        #    - 6379:6379
+        volumes:
+          - "./.data/redis:/data"
+
+    nodejs:
+        restart: unless-stopped
+        image: node:13-alpine
+        volumes_from:
+            - php
+        working_dir: /var/www/symfony
+        command: tail -f /dev/null
+
+    certbot:
+        depends_on:
+            - nginx
+        image: certbot/certbot
+        volumes:
+            - ./data/certbot/:/etc/letsencrypt/
+        volumes_from:
+          - php
+        #command: certbot certonly --webroot --webroot-path=/var/www/symfony/public --email ${EMAIL_ADDRESS} --agree-tos --no-eff-email -d ${DOMAIN_NAME}
+        command: tail -f /dev/null
+        entrypoint: []
