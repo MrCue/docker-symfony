@@ -50,7 +50,7 @@ services:
             - php
         volumes:
             - ./logs/nginx/:/var/log/nginx
-            - ./certbot/:/etc/letsencrypt
+            - ./data/certbot/:/etc/letsencrypt
 
     elk:
         restart: unless-stopped
