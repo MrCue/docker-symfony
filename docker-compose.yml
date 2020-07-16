@@ -50,7 +50,7 @@ services:
             - php
         volumes:
             - ./logs/nginx/:/var/log/nginx
-            - ./certbot/:/etc/letsencrypt
+            - ./.data/certbot/:/etc/letsencrypt
 
     elk:
         restart: unless-stopped
@@ -96,7 +96,7 @@ services:
             - nginx
         image: certbot/certbot
         volumes:
-            - ./data/certbot/:/etc/letsencrypt/
+            - ./.data/certbot/:/etc/letsencrypt/
         volumes_from:
           - php
         #command: certbot certonly --webroot --webroot-path=/var/www/symfony/public --email ${EMAIL_ADDRESS} --agree-tos --no-eff-email -d ${DOMAIN_NAME}
