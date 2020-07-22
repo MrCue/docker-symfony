@@ -1,16 +1,9 @@
-FROM debian:jessie
-
-
-RUN apt-get update && apt-get install -y \
-    nginx
+FROM nginx
 
 ADD nginx.conf /etc/nginx/
-ADD symfony.conf /etc/nginx/sites-available/
+ADD conf.d/ /etc/nginx/conf.d/
 
-RUN ln -s /etc/nginx/sites-available/symfony.conf /etc/nginx/sites-enabled/symfony \
-&& rm /etc/nginx/sites-enabled/default
-
-RUN echo "upstream php-upstream { server php:9000; }" > /etc/nginx/conf.d/upstream.conf
+RUN rm /etc/nginx/conf.d/default.conf
 
 RUN usermod -u 1000 www-data
 

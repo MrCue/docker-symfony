@@ -22,7 +22,7 @@ services:
                 TIMEZONE: ${TIMEZONE}
         volumes:
             - ${SYMFONY_APP_PATH}:/var/www/symfony
-            - ./.data/symfony/uploads:/var/www/symfony/uploads/
+            - ./.data/symfony/uploads:/var/www/symfony/uploads
             - ./logs/symfony:/var/www/symfony/app/logs
             - ./logs/php-fpm:/var/logs/php
 
