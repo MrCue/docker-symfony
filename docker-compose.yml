@@ -68,13 +68,11 @@ services:
     rabbit_mq:
         restart: unless-stopped
         image: rabbitmq:3-management-alpine
-        #ports:
+        ports:
         #    - 15671:15671
-        #    - 15672:15672
+            - 15672:15672
         #    - 5672:5672
         volumes:
-            - ./infrastructure/rabbitmq/etc/:/etc/rabbitmq/
-            #- ./.data/rabbitmq/:/var/lib/rabbitmq/
             - ./logs/rabbitmq/:/var/log/rabbitmq/log
 
     redis:
