@@ -7,7 +7,11 @@ RUN apt-get update && apt-get install -y \
     openssl \
     git \
     supervisor \
-    unzip
+    unzip \
+    #Rabbit MQ
+    librabbitmq-dev \
+    libssh-dev
+    #End Rabbit MQ
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
@@ -24,10 +28,7 @@ ADD conf.d/php.ini /usr/local/etc/php/conf.d/php.ini
 RUN docker-php-ext-install pdo pdo_mysql
 
 #Install AMPQ
-RUN apt-get install -y \
-librabbitmq-dev \
-libssh-dev \
-&& pecl install amqp \
+RUN pecl install amqp \
 && docker-php-ext-enable amqp
 
 # Install PHP Redis extension
@@ -35,7 +36,7 @@ RUN pecl install -o -f redis \
 &&  rm -rf /tmp/pear \
 &&  docker-php-ext-enable redis
 
-RUN echo 'alias sf="php app/console"' >> ~/.bashrc \
-&& echo 'alias sf3="php bin/console"' >> ~/.bashrc
+RUN echo 'alias update-db="php bin/console doctrine:cache:clear-metadata; bin/console doctrine:schema:update --dump-sql; php bin/console doctrine:schema:update --force;"' >> ~/.bashrc \
+&& echo 'alias phpstan="php -d memory_limit=4G vendor/bin/phpstan analyse src"' >> ~/.bashrc
 
 WORKDIR /var/www/symfony

@@ -46,7 +46,7 @@ RUN pecl install -o -f redis \
 &&  rm -rf /tmp/pear \
 &&  docker-php-ext-enable redis
 
-RUN echo 'alias sf="php app/console"' >> ~/.bashrc \
-&& echo 'alias sf3="php bin/console"' >> ~/.bashrc
+RUN echo 'alias update-db="php bin/console doctrine:cache:clear-metadata; bin/console doctrine:schema:update --dump-sql; php bin/console doctrine:schema:update --force;"' >> ~/.bashrc \
+&& echo 'alias phpstan="php -d memory_limit=4G vendor/bin/phpstan analyse src"' >> ~/.bashrc
 
 WORKDIR /var/www/symfony
